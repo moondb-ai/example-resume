@@ -1,21 +1,24 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { moondb } from "@/lib/moondb";
 import { renderResumeHtml } from "@/lib/templates";
 import type { TemplateId } from "@/lib/templates";
 
-export default function PublicResumePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = use(params);
+export default function PublicResumePage() {
+  const pathname = usePathname();
+  const slug = pathname.split("/r/")[1];
   const [html, setHtml] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!slug) {
+      setError("Resume not found");
+      setLoading(false);
+      return;
+    }
     moondb(`/api/resumes?slug=eq.${slug}&status=eq.published&limit=1`, {
       isPublic: true,
     })

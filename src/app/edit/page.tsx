@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { moondb, MoonDBError } from "@/lib/moondb";
 import { Button } from "@/components/ui/button";
@@ -28,12 +28,9 @@ type Resume = {
 
 const MAX_PUBLISHED = 3;
 
-export default function EditResumePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function EditResumePage() {
+  const pathname = usePathname();
+  const id = pathname.split("/edit/")[1];
   const { user, token, loading: authLoading } = useAuth();
   const [resume, setResume] = useState<Resume | null>(null);
   const [structuredMd, setStructuredMd] = useState("");
@@ -52,6 +49,7 @@ export default function EditResumePage({
       router.push("/login");
       return;
     }
+    if (!id) return;
 
     Promise.all([
       moondb(`/api/resumes/${id}`, { token }),
